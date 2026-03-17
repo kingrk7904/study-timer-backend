@@ -13,6 +13,9 @@ jobs:
   build:
     name: Build and Analyze
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
 
     steps:
       # 1️⃣ Checkout repository
@@ -39,18 +42,12 @@ jobs:
       - name: Give execute permission to mvnw
         run: chmod +x mvnw
 
-      # 5️⃣ Build project
-      - name: Build project
-        run: ./mvnw -B clean verify -Dsonar.skip=true
-
-      # 6️⃣ SonarCloud analysis
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
+      # 5️⃣ Build project and publish Sonar analysis with the Maven scanner
+      - name: Build project and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=kingrk7904_study-timer-backend
-            -Dsonar.organization=kingrk7904
-            -Dsonar.java.binaries=target/classes
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          ./mvnw -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          -Dsonar.projectKey=kingrk7904_study-timer-backend
+          -Dsonar.organization=kingrk7904
