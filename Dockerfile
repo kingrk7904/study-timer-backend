@@ -7,13 +7,14 @@ COPY pom.xml .
 COPY src ./src
 
 RUN mvn clean package -DskipTests
+RUN find /build/target -maxdepth 1 -name '*.jar' ! -name '*.jar.original' -exec cp {} /build/app.jar \;
 
 # ---------- STAGE 2 : Run ----------
 FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 
-COPY --from=build /build/target/*.jar app.jar
+COPY --from=build /build/app.jar app.jar
 
 # Azure App Service injects PORT at runtime; default to 8080 locally.
 ENV PORT=8080
